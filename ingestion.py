@@ -16,7 +16,7 @@ load_dotenv()
 
 def partition_document(file_path: str):
     """Extract elements from PDF using unstructured"""
-    print(f"📄 Partitioning document: {file_path}")
+    print(f"Partitioning document: {file_path}")
 
     elements = partition_pdf(
         filename=file_path,  # Path to your PDF file
@@ -26,7 +26,7 @@ def partition_document(file_path: str):
         extract_image_block_to_payload=True # Store images as base64 data you can actually use
     )
 
-    print(f"✅ Extracted {len(elements)} elements")
+    print(f"Extracted {len(elements)} elements")
     return elements
 
 
@@ -36,7 +36,7 @@ def partition_document(file_path: str):
 
 def create_chunks_by_title(elements):
     """Create intelligent chunks using title-based strategy"""
-    print("🔨 Creating smart chunks...")
+    print("Creating smart chunks...")
 
     chunks = chunk_by_title(
         elements, # The parsed PDF elements from previous step
@@ -45,7 +45,7 @@ def create_chunks_by_title(elements):
         combine_text_under_n_chars=500 # Merge tiny chunks under 500 chars with neighbors
     )
 
-    print(f"✅ Created {len(chunks)} chunks")
+    print(f"Created {len(chunks)} chunks")
     return chunks
 
 
@@ -87,13 +87,13 @@ def create_ai_enhanced_summary(text: str, tables: List[str], images: List[str]) 
 
     try:
         # Initialize LLM (needs vision model for images)
-        llm = ChatOllama(model="bge-m3", temperature=0)
+        llm = ChatOllama(model="qwen2.5:7b", temperature=0)
 
         # Build the text prompt
-        prompt_text = f"""You are creating a searchable description for document content retrieval.
+        prompt_text = f"""Tu crée une description interrogeable destinée à la recherche de contenu documentaire pour du Bâtiment et Travaux Publics (BTP) ou Rénovation d'intérieur.
 
-        CONTENT TO ANALYZE:
-        TEXT CONTENT:
+        CONTENU À ANALYSER:
+        CONTENU DU TEXTE:
         {text}
 
         """
@@ -105,18 +105,18 @@ def create_ai_enhanced_summary(text: str, tables: List[str], images: List[str]) 
                 prompt_text += f"Table {i+1}:\n{table}\n\n"
 
                 prompt_text += """
-                YOUR TASK:
-                Generate a comprehensive, searchable description that covers:
+                VOTRE TÂCHE :
+                Générez une description complète et optimisée pour la recherche, incluant les éléments suivants :
 
-                1. Key facts, numbers, and data points from text and tables
-                2. Main topics and concepts discussed
-                3. Questions this content could answer
-                4. Visual content analysis (charts, diagrams, patterns in images)
-                5. Alternative search terms users might use
+                1. Faits, chiffres et données clés issus du texte et des tableaux
+                2. Principaux sujets et concepts abordés
+                3. Questions auxquelles ce contenu peut répondre
+                4. Analyse des éléments visuels (graphiques, diagrammes, motifs dans les images)
+                5. Variantes de termes de recherche susceptibles d'être utilisées par les utilisateurs
 
-                Make it detailed and searchable - prioritize findability over brevity.
+                Veillez à ce que la description soit détaillée et facile à trouver ; privilégiez la découvrabilité à la concision.
 
-                SEARCHABLE DESCRIPTION:"""
+                DESCRIPTION OPTIMISÉE POUR LA RECHERCHE :"""
 
         # Build message content starting with text
         message_content = [{"type": "text", "text": prompt_text}]
@@ -135,7 +135,7 @@ def create_ai_enhanced_summary(text: str, tables: List[str], images: List[str]) 
         return response.content
 
     except Exception as e:
-        print(f"     ❌ AI summary failed: {e}")
+        print(f"AI summary failed: {e}")
         # Fallback to simple summary
         summary = f"{text[:300]}..."
         if tables:
@@ -148,7 +148,8 @@ def create_ai_enhanced_summary(text: str, tables: List[str], images: List[str]) 
 
 def summarise_chunks(chunks):
     """Process all chunks with AI Summaries"""
-    print("🧠 Processing chunks with AI Summaries...")
+
+    print("Processing chunks with AI Summaries...")
 
     langchain_documents = []
     total_chunks = len(chunks)
@@ -176,7 +177,7 @@ def summarise_chunks(chunks):
                 print(f"     → AI summary created successfully")
                 print(f"     → Enhanced content preview: {enhanced_content[:200]}...")
             except Exception as e:
-                print(f"     ❌ AI summary failed: {e}")
+                print(f" AI summary failed: {e}")
                 enhanced_content = content_data['text']
         else:
             print(f"     → Using raw text (no tables/images)")
@@ -196,7 +197,7 @@ def summarise_chunks(chunks):
 
         langchain_documents.append(doc)
 
-    print(f"✅ Processed {len(langchain_documents)} chunks")
+    print(f"Processed {len(langchain_documents)} chunks")
     return langchain_documents
 
 
@@ -218,12 +219,8 @@ def export_chunks_to_json(chunks, filename="chunks_export.json"):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(export_data, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Exported {len(export_data)} chunks to {filename}")
+    print(f"Exported {len(export_data)} chunks to {filename}")
     return export_data
-
-
-
-
 
 
 
@@ -232,9 +229,9 @@ def export_chunks_to_json(chunks, filename="chunks_export.json"):
 
 def create_vector_store(documents, persist_directory="dbv1/chroma_db"):
     """Create and persist ChromaDB vector store"""
-    print("🔮 Creating embeddings and storing in ChromaDB...")
+    print("Creating embeddings and storing in ChromaDB...")
 
-    #embedding_model = OllamaEmbeddings(model="text-embedding-3-small")
+
     embedding_model = OllamaEmbeddings(model="bge-m3")
 
     # Create ChromaDB vector store
@@ -247,23 +244,15 @@ def create_vector_store(documents, persist_directory="dbv1/chroma_db"):
     )
     print("--- Finished creating vector store ---")
 
-    print(f"✅ Vector store created and saved to {persist_directory}")
+    print(f"Vector store created and saved to {persist_directory}")
     return vectorstore
-
-
-
-
-
-
-
-
 
 
 
 
 def run_complete_ingestion_pipeline(pdf_path: str):
     """Run the complete RAG ingestion pipeline"""
-    print("🚀 Starting RAG Ingestion Pipeline")
+    print("Starting RAG Ingestion Pipeline")
     print("=" * 50)
 
     # Step 1: Partition
@@ -278,76 +267,13 @@ def run_complete_ingestion_pipeline(pdf_path: str):
     # Step 4: Vector Store
     db = create_vector_store(summarised_chunks, persist_directory="dbv2/chroma_db")
 
-    print("🎉 Pipeline completed successfully!")
+    print("Pipeline completed successfully!")
     return db
 
 
 
 
-def generate_final_answer(chunks, query):
-    """Generate final answer using multimodal content"""
 
-    try:
-        # Initialize LLM (needs vision model for images)
-        #llm = ChatOllama(model="bge-m3", temperature=0)
-
-        llm = ChatOllama(model="qwen2.5:7b", temperature=0)
-
-        # Build the text prompt
-        prompt_text = f"""Based on the following documents, please answer this question: {query}
-
-CONTENT TO ANALYZE:
-"""
-
-        for i, chunk in enumerate(chunks):
-            prompt_text += f"--- Document {i+1} ---\n"
-
-            if "original_content" in chunk.metadata:
-                original_data = json.loads(chunk.metadata["original_content"])
-
-                # Add raw text
-                raw_text = original_data.get("raw_text", "")
-                if raw_text:
-                    prompt_text += f"TEXT:\n{raw_text}\n\n"
-
-                # Add tables as HTML
-                tables_html = original_data.get("tables_html", [])
-                if tables_html:
-                    prompt_text += "TABLES:\n"
-                    for j, table in enumerate(tables_html):
-                        prompt_text += f"Table {j+1}:\n{table}\n\n"
-
-            prompt_text += "\n"
-
-        prompt_text += """
-Please provide a clear, comprehensive answer using the text, tables, and images above. If the documents don't contain sufficient information to answer the question, say "I don't have enough information to answer that question based on the provided documents."
-
-ANSWER:"""
-
-        # Build message content starting with text
-        message_content = [{"type": "text", "text": prompt_text}]
-
-        # Add all images from all chunks
-        for chunk in chunks:
-            if "original_content" in chunk.metadata:
-                original_data = json.loads(chunk.metadata["original_content"])
-                images_base64 = original_data.get("images_base64", [])
-
-                for image_base64 in images_base64:
-                    message_content.append({
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}
-                    })
-
-        # Send to AI and get response
-        message = HumanMessage(content=message_content)
-        response = llm.invoke([message])
-
-        return response.content
-
-    except Exception as e:
-        print(f"❌ Answer generation failed: {e}")
-        return "Sorry, I encountered an error while generating the answer."
 
 
 if __name__ == "__main__":
